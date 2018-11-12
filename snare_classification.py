@@ -42,8 +42,8 @@ from scipy import interp
 #define params
 #trn_file = sys.argv[1]
 #tst_file = sys.argv[2]
-trn_file = 'dataset/pssm.cv.scale.csv'
-tst_file = 'dataset/pssm.ind.scale.csv'
+trn_file = 'dataset/pssm.cv.csv'
+tst_file = 'dataset/pssm.ind.csv'
 
 num_features = 400
 nb_classes = 2
@@ -99,16 +99,16 @@ def cnn_model():
     model.add(Activation('relu'))
     model.add(MaxPooling2D(strides=(nb_pools, nb_pools), data_format="channels_first"))
     
-#    model.add(ZeroPadding2D((1,1)))
-#    model.add(Conv2D(256, (nb_kernels, nb_kernels)))
-#    model.add(Activation('relu'))
-#    model.add(MaxPooling2D(strides=(nb_pools, nb_pools), data_format="channels_first"))
+    model.add(ZeroPadding2D((1,1)))
+    model.add(Conv2D(256, (nb_kernels, nb_kernels)))
+    model.add(Activation('relu'))
+    model.add(MaxPooling2D(strides=(nb_pools, nb_pools), data_format="channels_first"))
 
     ## add the model on top of the convolutional base
     #model.add(top_model)
     model.add(Flatten())
-#    model.add(Dropout(0.5))
-    model.add(Dense(128))
+    model.add(Dropout(0.1))
+    model.add(Dense(256))
     #model.add(BatchNormalization())
     model.add(Activation('relu'))
     #model.add(Dropout(0.5))
@@ -123,29 +123,12 @@ def cnn_model():
 
     #model.compile(loss='categorical_crossentropy', optimizer='adadelta')
     # Compile model
-    model.compile(loss='binary_crossentropy', optimizer='adadelta', metrics=['accuracy'])
+    model.compile(loss='binary_crossentropy', optimizer='nadam', metrics=['accuracy'])
     return model
 
 
 
-#class_weights = {0:2234, 1:2234}
-#sm = SMOTE(random_state=12, ratio = class_weights)
-#x_res, y_res = sm.fit_sample(X_trn, Y_trn)
-#
-#x_train_res, x_val_res, y_train_res, y_val_res = train_test_split(x_res,
-#                                                    y_res,
-#                                                    test_size = .1,
-#                                                    random_state=12)
-#
-#clf_rf = RandomForestClassifier(n_estimators=25, random_state=12)
-#clf_rf.fit(x_train_res, y_train_res)
-#clf_rf.score(x_val_res, y_val_res)
-#print(Y_trn.value_counts(), np.bincount(y_res))
-
-#class_weights = class_weight.compute_class_weight('balanced', np.unique(Y_trn), Y_trn)
-#class_weights = {0:1.1, 1:10.1}
-#
-# define 10-fold cross validation test harness
+# define 5-fold cross validation test harness
 kfold = StratifiedKFold(n_splits=5, shuffle=True)
 cvscores = []
 # SVM
@@ -172,8 +155,6 @@ stop = timeit.default_timer()
 
 print('Time: ', stop - start)
     
-
-#plot_filters(model.layers[0],32,1)
 # Fit the model
 # save best weights
 model = cnn_model()
